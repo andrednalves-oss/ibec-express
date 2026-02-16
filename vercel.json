@@ -1,7 +1,8 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npx vite build --config vite.config.production.ts",
   "outputDirectory": "dist",
-  "framework": "vite",
+  "installCommand": "npm install",
+  "framework": null,
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
