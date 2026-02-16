@@ -111,52 +111,12 @@ CREATE POLICY "Allow all for financial_entries" ON financial_entries FOR ALL USI
 CREATE POLICY "Allow all for payroll" ON payroll FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
--- DADOS INICIAIS (SEED)
+-- DADOS INICIAIS (APENAS ADMIN)
 -- ============================================
 
--- Usuários padrão
+-- Usuário administrador padrão
 INSERT INTO users (name, email, role, password_hash) VALUES
-  ('Admin IBEC', 'admin@ibecexpress.com', 'admin', '123456'),
-  ('João Operacional', 'operacional@ibecexpress.com', 'operacional', '123456'),
-  ('Cliente ABC', 'cliente@abc.com', 'cliente', '123456'),
-  ('Carlos Colaborador', 'carlos@ibecexpress.com', 'colaborador', '123456');
-
--- Motoristas
-INSERT INTO drivers (name, phone, vehicle, plate, type, status, deliveries_count, rating) VALUES
-  ('Carlos Silva', '(11) 99999-0001', 'Fiorino', 'ABC-1234', 'motorista', 'available', 145, 4.8),
-  ('Roberto Santos', '(11) 99999-0002', 'Honda CG 160', 'DEF-5678', 'motoboy', 'busy', 230, 4.9),
-  ('André Oliveira', '(11) 99999-0003', 'Saveiro', 'GHI-9012', 'motorista', 'available', 89, 4.5),
-  ('Felipe Costa', '(11) 99999-0004', 'Yamaha Factor', 'JKL-3456', 'motoboy', 'busy', 312, 4.7),
-  ('Marcos Lima', '(11) 99999-0005', 'Kangoo', 'MNO-7890', 'motorista', 'offline', 67, 4.3),
-  ('Lucas Pereira', '(11) 99999-0006', 'Honda Bros', 'PQR-1234', 'motoboy', 'available', 198, 4.6),
-  ('Diego Almeida', '(11) 99999-0007', 'Strada', 'STU-5678', 'motorista', 'busy', 156, 4.4),
-  ('Thiago Souza', '(11) 99999-0008', 'Honda XRE', 'VWX-9012', 'motoboy', 'available', 276, 4.8);
-
--- Clientes
-INSERT INTO clients (name, email, phone, address, cnpj, contract_type, total_orders) VALUES
-  ('Loja ABC Materiais', 'contato@abc.com', '(11) 3333-0001', 'Rua Augusta, 500 - São Paulo', '12.345.678/0001-01', 'fixo', 89),
-  ('Restaurante Sabor & Cia', 'pedidos@sabor.com', '(11) 3333-0002', 'Av. Paulista, 1200 - São Paulo', '23.456.789/0001-02', 'fixo', 156),
-  ('Tech Solutions LTDA', 'logistica@tech.com', '(11) 3333-0003', 'Rua Faria Lima, 800 - São Paulo', '34.567.890/0001-03', 'avulso', 34),
-  ('Farmácia Saúde Total', 'entregas@saude.com', '(11) 3333-0004', 'Rua Oscar Freire, 300 - São Paulo', '45.678.901/0001-04', 'fixo', 210),
-  ('E-commerce FastShop', 'logistica@fastshop.com', '(11) 3333-0005', 'Av. Brasil, 2000 - São Paulo', '56.789.012/0001-05', 'fixo', 178),
-  ('Padaria Pão Quente', 'entregas@paoquente.com', '(11) 3333-0006', 'Rua da Consolação, 450 - São Paulo', '67.890.123/0001-06', 'avulso', 22);
-
--- Lançamentos financeiros
-INSERT INTO financial_entries (type, category, description, value, entry_date) VALUES
-  ('revenue', 'Entregas Avulsas', 'Entregas avulsas - Semana 1', 3200, '2024-12-01'),
-  ('revenue', 'Contratos Fixos', 'Contrato Farmácia Saúde Total', 8500, '2024-12-01'),
-  ('revenue', 'Contratos Fixos', 'Contrato E-commerce FastShop', 12000, '2024-12-01'),
-  ('revenue', 'Contratos Fixos', 'Contrato Restaurante Sabor & Cia', 6800, '2024-12-01'),
-  ('revenue', 'Entregas Avulsas', 'Entregas avulsas - Semana 2', 4100, '2024-12-08'),
-  ('revenue', 'Contratos Fixos', 'Contrato Loja ABC Materiais', 5500, '2024-12-01'),
-  ('expense', 'Combustível', 'Combustível frota', 4200, '2024-12-05'),
-  ('expense', 'Manutenção', 'Manutenção veículos', 1800, '2024-12-10'),
-  ('expense', 'Folha de Pagamento', 'Salários motoristas', 16000, '2024-12-05'),
-  ('expense', 'Seguro', 'Seguro frota', 2500, '2024-12-01'),
-  ('expense', 'Aluguel', 'Aluguel escritório', 3000, '2024-12-01'),
-  ('expense', 'Telefonia', 'Planos celulares', 800, '2024-12-01'),
-  ('revenue', 'Entregas Avulsas', 'Entregas avulsas - Semana 3', 3800, '2024-12-15'),
-  ('expense', 'Combustível', 'Combustível frota - Quinzena 2', 3900, '2024-12-15');
+  ('Admin IBEC', 'admin@ibecexpress.com.br', 'admin', 'admin123');
 
 -- ============================================
 -- ÍNDICES PARA PERFORMANCE

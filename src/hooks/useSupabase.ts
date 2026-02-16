@@ -47,7 +47,7 @@ export function useAuth() {
       const user = mockUsers.find(u => u.email === email);
       setLoading(false);
       if (!user) { setError('Usuário não encontrado'); return null; }
-      if (password !== '123456') { setError('Senha incorreta'); return null; }
+      if (password !== 'admin123') { setError('Senha incorreta'); return null; }
       return user;
     }
 

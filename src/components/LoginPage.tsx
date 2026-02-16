@@ -1,23 +1,14 @@
 import { useState } from 'react';
-import { UserRole, User } from '../types';
-import { Truck, Shield, Headphones, Users, Briefcase, Eye, EyeOff, Loader2, Database, Wifi, WifiOff } from 'lucide-react';
+import { User } from '../types';
+import { Truck, Eye, EyeOff, Loader2, Database, Wifi, WifiOff, LogIn } from 'lucide-react';
 import { useAuth } from '../hooks/useSupabase';
 import { isSupabaseConfigured } from '../lib/supabase';
-
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
 }
 
-const roleConfig: Record<UserRole, { label: string; icon: React.ReactNode; desc: string; email: string }> = {
-  admin: { label: 'Administrador', icon: <Shield size={24} />, desc: 'Acesso total ao sistema', email: 'admin@ibecexpress.com' },
-  operacional: { label: 'Operacional', icon: <Headphones size={24} />, desc: 'Gestão de entregas e motoristas', email: 'operacional@ibecexpress.com' },
-  cliente: { label: 'Cliente', icon: <Briefcase size={24} />, desc: 'Acompanhe suas entregas', email: 'cliente@abc.com' },
-  colaborador: { label: 'Colaborador', icon: <Users size={24} />, desc: 'Acesso às suas tarefas', email: 'carlos@ibecexpress.com' },
-};
-
 export function LoginPage({ onLogin }: LoginPageProps) {
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,19 +16,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [localError, setLocalError] = useState('');
   const dbConnected = isSupabaseConfigured();
 
-  const handleRoleSelect = (role: UserRole) => {
-    setSelectedRole(role);
-    setEmail(roleConfig[role].email);
-    setPassword('123456');
-    setLocalError('');
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRole) {
-      setLocalError('Selecione um tipo de acesso');
-      return;
-    }
     if (!email || !password) {
       setLocalError('Preencha todos os campos');
       return;
@@ -61,7 +41,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative w-full max-w-lg">
+      <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-2xl shadow-orange-500/30 mb-4">
@@ -72,7 +52,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         {/* DB Status Badge */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-6">
           <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium ${
             dbConnected 
               ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
@@ -88,7 +68,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <>
                 <WifiOff size={14} />
                 <Database size={14} />
-                Modo Offline (dados locais)
+                Modo Offline
               </>
             )}
           </div>
@@ -96,52 +76,32 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
         {/* Login Card */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
-          <h2 className="text-white text-lg font-semibold mb-4 text-center">Selecione seu tipo de acesso</h2>
-          
-          {/* Role Selection */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {(Object.keys(roleConfig) as UserRole[]).map((role) => {
-              const config = roleConfig[role];
-              const isSelected = selectedRole === role;
-              return (
-                <button
-                  key={role}
-                  onClick={() => handleRoleSelect(role)}
-                  className={`p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
-                    isSelected
-                      ? 'bg-orange-500/20 border-orange-500 scale-[1.02]'
-                      : 'bg-white/5 border-white/10 hover:border-white/30 hover:bg-white/10'
-                  }`}
-                >
-                  <div className={`${isSelected ? 'text-orange-400' : 'text-slate-400'} mb-2`}>{config.icon}</div>
-                  <div className={`font-semibold text-sm ${isSelected ? 'text-orange-400' : 'text-white'}`}>{config.label}</div>
-                  <div className="text-xs text-slate-500 mt-1">{config.desc}</div>
-                </button>
-              );
-            })}
+          <div className="text-center mb-6">
+            <h2 className="text-white text-xl font-semibold">Acesse sua conta</h2>
+            <p className="text-slate-400 text-sm mt-1">Entre com suas credenciais para continuar</p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="text-sm text-slate-300 mb-1 block">E-mail</label>
+              <label className="text-sm text-slate-300 mb-1.5 block font-medium">E-mail</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seu@email.com"
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
               />
             </div>
             <div>
-              <label className="text-sm text-slate-300 mb-1 block">Senha</label>
+              <label className="text-sm text-slate-300 mb-1.5 block font-medium">Senha</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••"
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all pr-12"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all pr-12"
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -149,7 +109,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             </div>
 
-            {displayError && <p className="text-red-400 text-sm text-center bg-red-400/10 py-2 rounded-lg">{displayError}</p>}
+            {displayError && (
+              <p className="text-red-400 text-sm text-center bg-red-400/10 py-2.5 rounded-xl border border-red-400/20">
+                {displayError}
+              </p>
+            )}
 
             <button
               type="submit"
@@ -162,15 +126,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   Autenticando...
                 </>
               ) : (
-                'Entrar no Sistema'
+                <>
+                  <LogIn size={20} />
+                  Entrar no Sistema
+                </>
               )}
             </button>
           </form>
 
-          <p className="text-slate-500 text-xs text-center mt-4">
+          <p className="text-slate-500 text-xs text-center mt-5">
             {dbConnected 
               ? 'Autenticação via Supabase • Dados persistentes'
-              : 'Selecione um perfil e clique em entrar (senha: 123456)'
+              : 'Use: admin@ibecexpress.com.br / admin123'
             }
           </p>
         </div>

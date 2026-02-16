@@ -1,6 +1,6 @@
 import { 
   Package, Truck, TrendingUp, Clock, CheckCircle2, 
-  MapPin, Star, ArrowUpRight, ArrowDownRight, Activity, Loader2
+  MapPin, Star, ArrowUpRight, ArrowDownRight, Activity, Loader2, Plus
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { User } from '../types';
@@ -54,6 +54,16 @@ export function Dashboard({ user }: DashboardProps) {
     );
   }
 
+  const EmptyState = ({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle: string }) => (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mb-3">
+        <Icon size={24} className="text-slate-400" />
+      </div>
+      <p className="text-sm font-medium text-slate-500">{title}</p>
+      <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -71,9 +81,11 @@ export function Dashboard({ user }: DashboardProps) {
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
               <Package size={24} className="text-orange-600" />
             </div>
-            <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-lg">
-              <ArrowUpRight size={14} /> 12%
-            </span>
+            {activeDeliveries.length > 0 && (
+              <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-lg">
+                <ArrowUpRight size={14} /> Ativas
+              </span>
+            )}
           </div>
           <p className="text-3xl font-bold text-slate-900">{activeDeliveries.length}</p>
           <p className="text-sm text-slate-500 mt-1">Entregas Ativas</p>
@@ -95,9 +107,6 @@ export function Dashboard({ user }: DashboardProps) {
             <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
               <CheckCircle2 size={24} className="text-emerald-600" />
             </div>
-            <span className="flex items-center gap-1 text-green-600 text-sm font-medium bg-green-50 px-2 py-1 rounded-lg">
-              <ArrowUpRight size={14} /> 8%
-            </span>
           </div>
           <p className="text-3xl font-bold text-slate-900">{totalMonthDeliveries}</p>
           <p className="text-sm text-slate-500 mt-1">Entregas no Mês</p>
@@ -108,11 +117,10 @@ export function Dashboard({ user }: DashboardProps) {
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <TrendingUp size={24} className="text-purple-600" />
             </div>
-            <span className="flex items-center gap-1 text-red-500 text-sm font-medium bg-red-50 px-2 py-1 rounded-lg">
-              <ArrowDownRight size={14} /> 3%
-            </span>
           </div>
-          <p className="text-3xl font-bold text-slate-900">R$ {(totalRevenue / 1000).toFixed(1)}K</p>
+          <p className="text-3xl font-bold text-slate-900">
+            {totalRevenue > 0 ? `R$ ${(totalRevenue / 1000).toFixed(1)}K` : 'R$ 0'}
+          </p>
           <p className="text-sm text-slate-500 mt-1">Faturamento Mensal</p>
         </div>
       </div>
@@ -192,30 +200,34 @@ export function Dashboard({ user }: DashboardProps) {
             <h3 className="font-semibold text-slate-900">🏆 Top Motoristas</h3>
             <span className="text-xs text-slate-400">Por entregas</span>
           </div>
-          <div className="space-y-3">
-            {topDrivers.map((driver, idx) => (
-              <div key={driver.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                  idx === 0 ? 'bg-amber-100 text-amber-700' :
-                  idx === 1 ? 'bg-slate-200 text-slate-600' :
-                  idx === 2 ? 'bg-orange-100 text-orange-700' :
-                  'bg-slate-100 text-slate-500'
-                }`}>
-                  {idx + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{driver.name}</p>
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <Star size={12} className="text-yellow-400 fill-yellow-400" /> {driver.rating}
+          {topDrivers.length > 0 ? (
+            <div className="space-y-3">
+              {topDrivers.map((driver, idx) => (
+                <div key={driver.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                    idx === 0 ? 'bg-amber-100 text-amber-700' :
+                    idx === 1 ? 'bg-slate-200 text-slate-600' :
+                    idx === 2 ? 'bg-orange-100 text-orange-700' :
+                    'bg-slate-100 text-slate-500'
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 truncate">{driver.name}</p>
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      <Star size={12} className="text-yellow-400 fill-yellow-400" /> {driver.rating}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-900">{driver.deliveries}</p>
+                    <p className="text-xs text-slate-400">entregas</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">{driver.deliveries}</p>
-                  <p className="text-xs text-slate-400">entregas</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState icon={Truck} title="Nenhum motorista" subtitle="Cadastre motoristas na aba Motoristas" />
+          )}
         </div>
 
         {/* Top Clients */}
@@ -224,32 +236,36 @@ export function Dashboard({ user }: DashboardProps) {
             <h3 className="font-semibold text-slate-900">⭐ Top Clientes</h3>
             <span className="text-xs text-slate-400">Por pedidos</span>
           </div>
-          <div className="space-y-3">
-            {topClients.map((client, idx) => (
-              <div key={client.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                  idx === 0 ? 'bg-amber-100 text-amber-700' :
-                  idx === 1 ? 'bg-slate-200 text-slate-600' :
-                  idx === 2 ? 'bg-orange-100 text-orange-700' :
-                  'bg-slate-100 text-slate-500'
-                }`}>
-                  {idx + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{client.name}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    client.contractType === 'fixo' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+          {topClients.length > 0 ? (
+            <div className="space-y-3">
+              {topClients.map((client, idx) => (
+                <div key={client.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                    idx === 0 ? 'bg-amber-100 text-amber-700' :
+                    idx === 1 ? 'bg-slate-200 text-slate-600' :
+                    idx === 2 ? 'bg-orange-100 text-orange-700' :
+                    'bg-slate-100 text-slate-500'
                   }`}>
-                    {client.contractType === 'fixo' ? 'Contrato' : 'Avulso'}
-                  </span>
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 truncate">{client.name}</p>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      client.contractType === 'fixo' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {client.contractType === 'fixo' ? 'Contrato' : 'Avulso'}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-slate-900">{client.totalOrders}</p>
+                    <p className="text-xs text-slate-400">pedidos</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">{client.totalOrders}</p>
-                  <p className="text-xs text-slate-400">pedidos</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState icon={Plus} title="Nenhum cliente" subtitle="Cadastre clientes na aba Clientes" />
+          )}
         </div>
 
         {/* Map placeholder / Active Deliveries Map */}
@@ -266,28 +282,39 @@ export function Dashboard({ user }: DashboardProps) {
                 <path d="M30,100 Q120,180 220,80 T370,200" stroke="#10b981" fill="none" strokeWidth="2" strokeDasharray="5,5" />
               </svg>
             </div>
-            {activeDeliveries.slice(0, 4).map((del, i) => (
-              <div key={del.id} className="absolute" style={{ 
-                top: `${20 + (i * 25)}%`, 
-                left: `${15 + (i * 20)}%` 
-              }}>
-                <div className="relative">
-                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                    <MapPin size={16} className="text-white" />
+            {activeDeliveries.length > 0 ? (
+              activeDeliveries.slice(0, 4).map((del, i) => (
+                <div key={del.id} className="absolute" style={{ 
+                  top: `${20 + (i * 25)}%`, 
+                  left: `${15 + (i * 20)}%` 
+                }}>
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                      <MapPin size={16} className="text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
                 </div>
+              ))
+            ) : (
+              <div className="text-center z-10">
+                <MapPin size={32} className="text-slate-300 mx-auto mb-2" />
+                <p className="text-sm text-slate-400">Sem entregas ativas</p>
               </div>
-            ))}
+            )}
           </div>
           <div className="space-y-2">
-            {activeDeliveries.slice(0, 3).map((del) => (
-              <div key={del.id} className="flex items-center gap-2 text-xs">
-                <span className={`w-2 h-2 rounded-full ${del.status === 'in_transit' ? 'bg-blue-500' : 'bg-yellow-500'}`} />
-                <span className="text-slate-600 truncate flex-1">{del.driverName}</span>
-                <span className="text-slate-400">{del.destination.substring(0, 20)}...</span>
-              </div>
-            ))}
+            {activeDeliveries.length > 0 ? (
+              activeDeliveries.slice(0, 3).map((del) => (
+                <div key={del.id} className="flex items-center gap-2 text-xs">
+                  <span className={`w-2 h-2 rounded-full ${del.status === 'in_transit' ? 'bg-blue-500' : 'bg-yellow-500'}`} />
+                  <span className="text-slate-600 truncate flex-1">{del.driverName}</span>
+                  <span className="text-slate-400">{del.destination.substring(0, 20)}...</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-slate-400 text-center">Nenhuma entrega em andamento</p>
+            )}
           </div>
         </div>
       </div>
@@ -298,38 +325,46 @@ export function Dashboard({ user }: DashboardProps) {
           <h3 className="font-semibold text-slate-900">📦 Entregas Recentes</h3>
           <p className="text-sm text-slate-500 mt-1">Últimas entregas registradas no sistema</p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50">
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">ID</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Cliente</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Motorista</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Destino</th>
-                <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Status</th>
-                <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Valor</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {deliveries.slice(0, 6).map((del) => (
-                <tr key={del.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 text-sm font-mono text-slate-500">#{del.id.substring(0, 8).toUpperCase()}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">{del.clientName}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{del.driverName}</td>
-                  <td className="px-6 py-4 text-sm text-slate-500">{del.destination}</td>
-                  <td className="px-6 py-4">
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[del.status]}`}>
-                      {statusLabels[del.status]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-900 text-right">
-                    R$ {del.value.toFixed(2)}
-                  </td>
+        {deliveries.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">ID</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Cliente</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Motorista</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Destino</th>
+                  <th className="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Status</th>
+                  <th className="text-right text-xs font-semibold text-slate-500 uppercase tracking-wider px-6 py-3">Valor</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {deliveries.slice(0, 6).map((del) => (
+                  <tr key={del.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-mono text-slate-500">#{del.id.substring(0, 8).toUpperCase()}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-slate-900">{del.clientName}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{del.driverName}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500">{del.destination}</td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[del.status]}`}>
+                        {statusLabels[del.status]}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-900 text-right">
+                      R$ {del.value.toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <Package size={48} className="mx-auto text-slate-300 mb-3" />
+            <p className="text-slate-500 font-medium">Nenhuma entrega registrada</p>
+            <p className="text-sm text-slate-400 mt-1">Vá para a aba Entregas para registrar a primeira entrega</p>
+          </div>
+        )}
       </div>
     </div>
   );
