@@ -1,10 +1,32 @@
 -- ============================================
 -- IBEC EXPRESS - Script de Criação do Banco
 -- Execute este SQL no Supabase SQL Editor
+-- Pode ser executado MÚLTIPLAS VEZES sem erro
 -- ============================================
 
--- 1. TABELA DE USUÁRIOS
-CREATE TABLE IF NOT EXISTS users (
+-- ============================================
+-- 1. REMOVER TUDO QUE EXISTE (LIMPA TUDO)
+-- ============================================
+DROP POLICY IF EXISTS "Allow all for users" ON users;
+DROP POLICY IF EXISTS "Allow all for drivers" ON drivers;
+DROP POLICY IF EXISTS "Allow all for clients" ON clients;
+DROP POLICY IF EXISTS "Allow all for deliveries" ON deliveries;
+DROP POLICY IF EXISTS "Allow all for financial_entries" ON financial_entries;
+DROP POLICY IF EXISTS "Allow all for payroll" ON payroll;
+
+DROP TABLE IF EXISTS payroll CASCADE;
+DROP TABLE IF EXISTS financial_entries CASCADE;
+DROP TABLE IF EXISTS deliveries CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS drivers CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- ============================================
+-- 2. CRIAR TABELAS
+-- ============================================
+
+-- USUÁRIOS
+CREATE TABLE users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
@@ -16,8 +38,8 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. TABELA DE MOTORISTAS
-CREATE TABLE IF NOT EXISTS drivers (
+-- MOTORISTAS
+CREATE TABLE drivers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   phone TEXT NOT NULL,
@@ -33,8 +55,8 @@ CREATE TABLE IF NOT EXISTS drivers (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. TABELA DE CLIENTES
-CREATE TABLE IF NOT EXISTS clients (
+-- CLIENTES
+CREATE TABLE clients (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -48,26 +70,30 @@ CREATE TABLE IF NOT EXISTS clients (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 4. TABELA DE ENTREGAS
-CREATE TABLE IF NOT EXISTS deliveries (
+-- ENTREGAS
+CREATE TABLE deliveries (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  client_id UUID REFERENCES clients(id),
+  client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
   client_name TEXT NOT NULL,
-  driver_id UUID REFERENCES drivers(id),
+  driver_id UUID REFERENCES drivers(id) ON DELETE SET NULL,
   driver_name TEXT NOT NULL,
   origin TEXT NOT NULL,
   destination TEXT NOT NULL,
+  stops JSONB DEFAULT '[]',
+  total_distance NUMERIC(10,2) DEFAULT 0,
+  total_time INTEGER DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_transit', 'delivered', 'cancelled')),
   delivery_date DATE DEFAULT CURRENT_DATE,
   value NUMERIC(10,2) NOT NULL,
   type TEXT NOT NULL CHECK (type IN ('avulsa', 'contrato')),
+  priority TEXT DEFAULT 'normal' CHECK (priority IN ('normal', 'urgent', 'scheduled')),
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 5. TABELA FINANCEIRA
-CREATE TABLE IF NOT EXISTS financial_entries (
+-- FINANCEIRO
+CREATE TABLE financial_entries (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   type TEXT NOT NULL CHECK (type IN ('revenue', 'expense')),
   category TEXT NOT NULL,
@@ -77,10 +103,10 @@ CREATE TABLE IF NOT EXISTS financial_entries (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 6. TABELA DE FOLHA DE PAGAMENTO
-CREATE TABLE IF NOT EXISTS payroll (
+-- FOLHA DE PAGAMENTO
+CREATE TABLE payroll (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  driver_id UUID REFERENCES drivers(id),
+  driver_id UUID REFERENCES drivers(id) ON DELETE SET NULL,
   driver_name TEXT NOT NULL,
   month TEXT NOT NULL,
   base_salary NUMERIC(10,2) NOT NULL,
@@ -91,10 +117,9 @@ CREATE TABLE IF NOT EXISTS payroll (
 );
 
 -- ============================================
--- POLÍTICAS DE SEGURANÇA (RLS)
+-- 3. SEGURANÇA (RLS)
 -- ============================================
 
--- Habilitar RLS em todas as tabelas
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
@@ -102,7 +127,6 @@ ALTER TABLE deliveries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE financial_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payroll ENABLE ROW LEVEL SECURITY;
 
--- Políticas permissivas (para começar - ajuste conforme necessidade)
 CREATE POLICY "Allow all for users" ON users FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for drivers" ON drivers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for clients" ON clients FOR ALL USING (true) WITH CHECK (true);
@@ -111,25 +135,30 @@ CREATE POLICY "Allow all for financial_entries" ON financial_entries FOR ALL USI
 CREATE POLICY "Allow all for payroll" ON payroll FOR ALL USING (true) WITH CHECK (true);
 
 -- ============================================
--- DADOS INICIAIS (APENAS ADMIN)
+-- 4. ADMIN PADRÃO
 -- ============================================
 
--- Usuário administrador padrão
 INSERT INTO users (name, email, role, password_hash) VALUES
   ('Admin IBEC', 'admin@ibecexpress.com.br', 'admin', 'admin123');
 
 -- ============================================
--- ÍNDICES PARA PERFORMANCE
+-- 5. ÍNDICES DE PERFORMANCE
 -- ============================================
-CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status);
-CREATE INDEX IF NOT EXISTS idx_deliveries_date ON deliveries(delivery_date);
-CREATE INDEX IF NOT EXISTS idx_deliveries_client ON deliveries(client_id);
-CREATE INDEX IF NOT EXISTS idx_deliveries_driver ON deliveries(driver_id);
-CREATE INDEX IF NOT EXISTS idx_drivers_status ON drivers(status);
-CREATE INDEX IF NOT EXISTS idx_drivers_type ON drivers(type);
-CREATE INDEX IF NOT EXISTS idx_clients_contract ON clients(contract_type);
-CREATE INDEX IF NOT EXISTS idx_financial_type ON financial_entries(type);
-CREATE INDEX IF NOT EXISTS idx_financial_date ON financial_entries(entry_date);
-CREATE INDEX IF NOT EXISTS idx_payroll_month ON payroll(month);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+
+CREATE INDEX idx_deliveries_status ON deliveries(status);
+CREATE INDEX idx_deliveries_date ON deliveries(delivery_date);
+CREATE INDEX idx_deliveries_client ON deliveries(client_id);
+CREATE INDEX idx_deliveries_driver ON deliveries(driver_id);
+CREATE INDEX idx_drivers_status ON drivers(status);
+CREATE INDEX idx_drivers_type ON drivers(type);
+CREATE INDEX idx_clients_contract ON clients(contract_type);
+CREATE INDEX idx_financial_type ON financial_entries(type);
+CREATE INDEX idx_financial_date ON financial_entries(entry_date);
+CREATE INDEX idx_payroll_month ON payroll(month);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+
+-- ============================================
+-- PRONTO! Banco configurado com sucesso.
+-- Login: admin@ibecexpress.com.br / admin123
+-- ============================================
